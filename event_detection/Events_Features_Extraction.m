@@ -1,68 +1,40 @@
-function [feat] = Events_Features_Extraction(Fs, sig)
-% EVENTS_FEATURES_EXTRACTION Extracts time and frequency domain features from footstep signals
-%
-% This function extracts both time and frequency domain features from footstep
-% signal segments. The features are used for footstep pattern classification.
-%
-% INPUTS:
-%   Fs  - Sampling frequency (Hz)
-%   sig - Signal segment (vector)
-%
-% OUTPUT:
-%   feat - Feature vector containing:
-%          Time domain features:
-%          - Standard Deviation
-%          - Kurtosis
-%          - Root Mean Square (RMS)
-%          - 25th Percentile (1st Quartile)
-%          Frequency domain features:
-%          - Power in frequency bands [40-80 Hz]
-%          - Power in frequency bands [80-120 Hz]
-%          - Power in frequency bands [120-160 Hz]
-%
-% Author: [Your Name]
-% Date: [Date]
+function [ feat ] = Events_Features_Extraction( Fs,sig )
+%UNTITLED Summary of this function goes here
+%   Detailed explanation goes here
 
-i = 1;
+i=1;
 
-%% Time Domain Features
-% Standard deviation - measures signal variability
-feat(i) = std(sig);         i = i + 1;
 
-% Kurtosis - measures the "tailedness" of the signal distribution
-feat(i) = kurtosis(sig);    i = i + 1;
+feat(i) = std(sig); i = i+1;
+feat(i) = kurtosis(sig); i= i+1;
+% Add Mean Squared Error (MSE)                  % Calculate MSE
+feat(i) = rms(sig); i = i + 1;            % Add MSE as a feature
+feat(i) = quantile(sig, 0.25); i = i+1;
+%feat(i) = mean(sig); i = i+1;
+% feat(i)  = norm(sig,2); i = i+1;
+% Compute Shannon Energy
+%shannon_energy = -sum(sig.^2 .* log(sig.^2 + eps)); % eps added for numerical stability
+%feat(i) = shannon_energy; i = i + 1;
 
-% Root Mean Square - measures signal energy
-feat(i) = rms(sig);         i = i + 1;
 
-% 25th percentile - measures lower quartile of signal distribution
-feat(i) = quantile(sig, 0.25); i = i + 1;
+L=length(sig);
+NFFT = 8*2^nextpow2(L); % Next power of 2 from length of y
+fft_sig = fft(sig,NFFT)/L;
+fft_sig=2*abs(fft_sig(1:NFFT/2+1));
+f = Fs/2*linspace(0,1,NFFT/2+1);
 
-% Optional additional features (uncomment to include)
-% feat(i) = mean(sig);      i = i + 1;    % Mean
-% feat(i) = norm(sig, 2);   i = i + 1;    % L2 norm
-% feat(i) = -sum(sig.^2 .* log(sig.^2 + eps)); i = i + 1; % Shannon energy
+step = 40 ;
+% feat(i)=(norm(fft_sig(1:sum(f <= 2)))^2);i=i+1; % 14
 
-%% Frequency Domain Features
-% Compute FFT with zero-padding for better frequency resolution
-L = length(sig);
-NFFT = 8 * 2^nextpow2(L);           % Zero-padding for FFT resolution
-fft_sig = fft(sig, NFFT) / L;       % FFT computation
-fft_sig = 2 * abs(fft_sig(1:NFFT/2+1)); % One-sided magnitude spectrum
-f = Fs/2 * linspace(0, 1, NFFT/2+1);    % Frequency vector
+ for j = 40:step:120
+ 
+      feat(i)=(norm( fft_sig(  sum(f <= j)+1 : sum(f <= j+step) )  )^2);i=i+1;
+ 
+ end
 
-% Extract power in selected frequency bands
-step = 40;  % Frequency band width (Hz)
-for band = 1:3
-    start_freq = 40 + (band-1)*step;
-    end_freq = start_freq + step;
-    
-    % Find indices for the frequency band
-    band_idx = find(f >= start_freq & f < end_freq);
-    
-    % Calculate power in the band
-    feat(i) = sum(fft_sig(band_idx).^2); i = i + 1;
-end
+
+
+
 
 end
 
