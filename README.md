@@ -1,4 +1,4 @@
-# A Structural Vibration-based Dataset for Human Gait Recognition
+# Terra: Footstep Analysis and Classification
 
 This repository contains the implementation and data processing pipeline for footstep analysis and classification research. The project focuses on processing footstep data, extracting features, and generating spectrograms for classification purposes.
 
@@ -60,6 +60,45 @@ The `specmeaker.py` script performs the following operations:
 - Saves spectrogram images in PNG format
 - Uses 'jet' colormap for visualization
 - Maintains transparent background for better integration
+
+## Dataset Pre-processing Steps
+
+### Step 1: Dataset Creation
+1. Open MATLAB and navigate to the `DatasetCreation.m` file
+2. Modify the `persons` array to match your dataset (default is set for A1 dataset)
+3. Run the `DatasetCreation.m` file
+4. When prompted, select the folder containing the dataset files (P1, P2, etc.)
+5. The script will:
+   - Concatenate each person's first 4 .mat files into a single file (e.g., P1_all.mat)
+   - Save the new files in the root folder
+   - Continue this process for all persons in the array
+
+### Step 2: Event Detection and Feature Extraction
+1. Open the `USLEET.m` file in MATLAB
+2. Ensure all dependent files are in the same directory:
+   - Event_Extract.m
+   - GMM_EM.m
+   - Other required function files
+3. Select one person's file (e.g., P1_all.mat) as a reference for event extraction
+4. Modify the `persons` array to match your dataset
+5. Run the `USLEET.m` file:
+   - It will display the smooth vibrational signal of the reference person
+   - Show 2 clusters formed using the signal
+   - Prompt you to press Enter in the MATLAB command window
+   - Process the entire dataset (may take 2-7 hours depending on dataset size and hardware)
+6. After completion:
+   - Right-click on the `person_feat` variable in the variable panel
+   - Save it as a MATLAB data file (e.g., DatasetName_VariableName.mat)
+
+### Step 3: Event Concatenation
+1. Open the `EventConcatenate.m` file in MATLAB
+2. Load the path of the newly saved DatasetName_VariableName.mat file
+3. Modify the loop iteration value to match the number of persons in your dataset
+4. Run the `EventConcatenate.m` file
+5. After completion:
+   - Right-click on the `footstep_feat` variable in the variable panel
+   - Save it as a MATLAB data file (e.g., DatasetName_VariableName.mat)
+6. This final file is ready for use in machine learning and deep learning algorithms
 
 ## Usage
 
